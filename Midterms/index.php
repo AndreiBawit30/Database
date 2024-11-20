@@ -2,22 +2,32 @@
 include("connect.php");
 
 if (isset($_POST['btnSend'])) {
+    $userID =  $_POST['userID'];
+    $content =  $_POST['content'];
+    $privacy =  $_POST['privacy'];
+    $cityID =  $_POST['cityID'];
+    $provinceID = $_POST['provinceID'];
 
-  $userID =  $_POST['userID'];
-  $content =  $_POST['content'];
-  $privacy =  $_POST['privacy'];
-  $cityID =  $_POST['cityID'];
-  $provinceID = $_POST['provinceID'];
+    $blogQuery = "
+    INSERT INTO posts (userID, content, privacy, cityID, provinceID) 
+    VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID')";
 
-
-  $blogQuery = "
-  INSERT INTO posts (userID, content, privacy, cityID, provinceID) 
-  VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID')";
-
-
-  executeQuery($blogQuery);
+    executeQuery($blogQuery);
 }
 
+if (isset($_POST['btnDelete'])) {
+    $idako = $_POST['idako'];
+
+    // Step 1: Delete the comments associated with the post
+    $deleteCommentsQuery = "DELETE FROM comments WHERE postID = '$idako'";
+    executeQuery($deleteCommentsQuery);
+
+    // Step 2: Delete the post
+    $deletePostQuery = "DELETE FROM posts WHERE postID = '$idako'";
+    executeQuery($deletePostQuery);
+}
+
+// Fetch the posts and comments
 $query = "
 SELECT 
     p.*, 
@@ -50,10 +60,7 @@ LEFT JOIN
     userinfo uc ON cu.userInfoID = uc.userInfoID
 ";
 
-
 $result = executeQuery($query);
-
-
 ?>
 
 <!doctype html>
@@ -104,17 +111,11 @@ $result = executeQuery($query);
         </div>
       </div>
 
-
       <?php
-
-
       if (mysqli_num_rows($result)) {
-        /*  $i = 1; */
         while ($user = mysqli_fetch_assoc($result)) {
       ?>
-
           <div class="col-12">
-            <?php /* echo $i++  */ ?>
             <div class="card rounded-4 shadow my-3 mx-5">
               <div class="card-body">
                 <h5 class="card-title">
@@ -127,6 +128,10 @@ $result = executeQuery($query);
                 </h6>
                 <p class="card-text"><?php echo $user['content']; ?></p>
                 <p class="card-text"><small class="text-muted"><?php echo $user['dateTime']; ?></small></p>
+                <form method="post">
+                  <input type="hidden" value="<?php echo $user['postID']; ?>" name="idako">
+                  <button class="btn btn-danger" name="btnDelete">Delete</button>
+                </form> 
               </div>
             </div>
 
@@ -142,7 +147,6 @@ $result = executeQuery($query);
               </div>
             <?php } ?>
           </div>
-
       <?php
         }
       }
