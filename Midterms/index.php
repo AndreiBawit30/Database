@@ -2,7 +2,6 @@
 include("connect.php");
 
 if (isset($_POST['btnSend'])) {
-
   $userID =  $_POST['userID'];
   $content =  $_POST['content'];
   $privacy =  $_POST['privacy'];
@@ -11,11 +10,23 @@ if (isset($_POST['btnSend'])) {
 
 
   $blogQuery = "
-  INSERT INTO posts (userID, content, privacy, cityID, provinceID) 
-  VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID')";
+    INSERT INTO posts (userID, content, privacy, cityID, provinceID, dateTime) 
+    VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID', NOW())";
 
 
   executeQuery($blogQuery);
+}
+
+if (isset($_POST['btnDelete'])) {
+  $idDel = $_POST['idDel'];
+
+
+  $deleteCommentsQuery = "DELETE FROM comments WHERE postID = '$idDel'";
+  executeQuery($deleteCommentsQuery);
+
+
+  $deletePostQuery = "DELETE FROM posts WHERE postID = '$idDel'";
+  executeQuery($deletePostQuery);
 }
 
 $query = "
@@ -50,10 +61,7 @@ LEFT JOIN
     userinfo uc ON cu.userInfoID = uc.userInfoID
 ";
 
-
 $result = executeQuery($query);
-
-
 ?>
 
 <!doctype html>
@@ -63,8 +71,7 @@ $result = executeQuery($query);
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Posts and Comments</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 
 <body>
@@ -104,32 +111,36 @@ $result = executeQuery($query);
         </div>
       </div>
 
-
       <?php
-
-
       if (mysqli_num_rows($result)) {
-        /*  $i = 1; */
         while ($user = mysqli_fetch_assoc($result)) {
       ?>
-
           <div class="col-12">
-            <?php /* echo $i++  */ ?>
             <div class="card rounded-4 shadow my-3 mx-5">
               <div class="card-body">
                 <h5 class="card-title">
                   <?php echo $user["posterFirstName"] . " " . $user["posterLastName"]; ?>
                   <span class="text-muted ms-2">Privacy: <?php echo $user['privacy']; ?></span>
                 </h5>
-
                 <h6 class="card-subtitle mb-2 text-body-secondary">
                   <?php echo $user["cityName"] . ", " . $user["provinceName"]; ?>
                 </h6>
-                <p class="card-text"><?php echo $user['content']; ?></p>
                 <p class="card-text"><small class="text-muted"><?php echo $user['dateTime']; ?></small></p>
+                <p class="card-text"><?php echo $user['content']; ?></p>
+                <div class="d-flex justify-content-between">
+                  <form method="post">
+                    <input type="hidden" value="<?php echo $user['postID']; ?>" name="idDel">
+                    <button class="btn btn-danger" name="btnDelete">Delete</button>
+                  </form>
+                  <form method="post">
+                    <a href="view.php?id=<?php echo $user['postID'] ?>">
+                      <button type="button" class="btn btn-success">Edit</button>
+                    </a>
+                  </form>
+                </div>
+
               </div>
             </div>
-
             <?php if ($user['commentContent']) { ?>
               <div class="card rounded-4 shadow my-2 mx-5">
                 <div class="card-body">
@@ -142,7 +153,6 @@ $result = executeQuery($query);
               </div>
             <?php } ?>
           </div>
-
       <?php
         }
       }
@@ -150,10 +160,6 @@ $result = executeQuery($query);
 
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
 </body>
 
 </html>
