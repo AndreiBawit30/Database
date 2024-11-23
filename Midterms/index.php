@@ -8,11 +8,9 @@ if (isset($_POST['btnSend'])) {
   $cityID =  $_POST['cityID'];
   $provinceID = $_POST['provinceID'];
 
-
   $blogQuery = "
     INSERT INTO posts (userID, content, privacy, cityID, provinceID, dateTime) 
     VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID', NOW())";
-
 
   executeQuery($blogQuery);
 }
@@ -20,10 +18,8 @@ if (isset($_POST['btnSend'])) {
 if (isset($_POST['btnDelete'])) {
   $idDel = $_POST['idDel'];
 
-
   $deleteCommentsQuery = "DELETE FROM comments WHERE postID = '$idDel'";
   executeQuery($deleteCommentsQuery);
-
 
   $deletePostQuery = "DELETE FROM posts WHERE postID = '$idDel'";
   executeQuery($deletePostQuery);
@@ -138,7 +134,6 @@ $result = executeQuery($query);
                     </a>
                   </form>
                 </div>
-
               </div>
             </div>
             <?php if ($user['commentContent']) { ?>
