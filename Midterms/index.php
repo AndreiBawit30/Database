@@ -2,32 +2,29 @@
 include("connect.php");
 
 if (isset($_POST['btnSend'])) {
-    $userID =  $_POST['userID'];
-    $content =  $_POST['content'];
-    $privacy =  $_POST['privacy'];
-    $cityID =  $_POST['cityID'];
-    $provinceID = $_POST['provinceID'];
+  $userID =  $_POST['userID'];
+  $content =  $_POST['content'];
+  $privacy =  $_POST['privacy'];
+  $cityID =  $_POST['cityID'];
+  $provinceID = $_POST['provinceID'];
 
-    $blogQuery = "
-    INSERT INTO posts (userID, content, privacy, cityID, provinceID) 
-    VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID')";
+  $blogQuery = "
+    INSERT INTO posts (userID, content, privacy, cityID, provinceID, dateTime) 
+    VALUES ('$userID', '$content', '$privacy', '$cityID', '$provinceID', NOW())";
 
-    executeQuery($blogQuery);
+  executeQuery($blogQuery);
 }
 
 if (isset($_POST['btnDelete'])) {
-    $idako = $_POST['idako'];
+  $idDel = $_POST['idDel'];
 
-    // Step 1: Delete the comments associated with the post
-    $deleteCommentsQuery = "DELETE FROM comments WHERE postID = '$idako'";
-    executeQuery($deleteCommentsQuery);
+  $deleteCommentsQuery = "DELETE FROM comments WHERE postID = '$idDel'";
+  executeQuery($deleteCommentsQuery);
 
-    // Step 2: Delete the post
-    $deletePostQuery = "DELETE FROM posts WHERE postID = '$idako'";
-    executeQuery($deletePostQuery);
+  $deletePostQuery = "DELETE FROM posts WHERE postID = '$idDel'";
+  executeQuery($deletePostQuery);
 }
 
-// Fetch the posts and comments
 $query = "
 SELECT 
     p.*, 
@@ -70,8 +67,7 @@ $result = executeQuery($query);
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Posts and Comments</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 
 <body>
@@ -122,19 +118,24 @@ $result = executeQuery($query);
                   <?php echo $user["posterFirstName"] . " " . $user["posterLastName"]; ?>
                   <span class="text-muted ms-2">Privacy: <?php echo $user['privacy']; ?></span>
                 </h5>
-
                 <h6 class="card-subtitle mb-2 text-body-secondary">
                   <?php echo $user["cityName"] . ", " . $user["provinceName"]; ?>
                 </h6>
-                <p class="card-text"><?php echo $user['content']; ?></p>
                 <p class="card-text"><small class="text-muted"><?php echo $user['dateTime']; ?></small></p>
-                <form method="post">
-                  <input type="hidden" value="<?php echo $user['postID']; ?>" name="idako">
-                  <button class="btn btn-danger" name="btnDelete">Delete</button>
-                </form> 
+                <p class="card-text"><?php echo $user['content']; ?></p>
+                <div class="d-flex justify-content-between">
+                  <form method="post">
+                    <input type="hidden" value="<?php echo $user['postID']; ?>" name="idDel">
+                    <button class="btn btn-danger" name="btnDelete">Delete</button>
+                  </form>
+                  <form method="post">
+                    <a href="view.php?id=<?php echo $user['postID'] ?>">
+                      <button type="button" class="btn btn-success">Edit</button>
+                    </a>
+                  </form>
+                </div>
               </div>
             </div>
-
             <?php if ($user['commentContent']) { ?>
               <div class="card rounded-4 shadow my-2 mx-5">
                 <div class="card-body">
@@ -154,10 +155,6 @@ $result = executeQuery($query);
 
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
 </body>
 
 </html>
